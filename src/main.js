@@ -9,7 +9,13 @@ const store = createStore({
         return {
             users: [],
             tasks: [],
-            projects: []
+            projects: [],
+            currentUser: {
+                username: '',
+                first_name: '',
+                last_name: '',
+                role: ''
+              }
         }
     }
 })

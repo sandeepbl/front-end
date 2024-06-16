@@ -26,7 +26,13 @@
                 </div>
             </div>
         </div>
-</div>
+    </div>
+    <div class="container" v-else>
+        <h3>Logged in User Profile</h3>
+        <p>User Name: {{ $store.state.currentUser.username }}</p>
+        <p>Name: {{ $store.state.currentUser.first_name }} {{ $store.state.currentUser.last_name }}</p>
+        <p>Role: {{ $store.state.currentUser.role }}</p>
+    </div>
 </template>
 
 <script>

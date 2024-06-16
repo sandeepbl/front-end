@@ -18,7 +18,49 @@
             <td>{{ user.last_name }}</td>
             <td>{{ user.role }}</td>
             <td>
-                <button type="button" class="btn btn-primary">Edit</button>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" :data-bs-target="'#staticBackdrop'+user.id">Edit</button>
+                
+                <div class="modal fade" :id="'staticBackdrop'+user.id" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="staticBackdropLabel">Modify User</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form @submit.prevent="modifyUser(user)">
+                                <fieldset>
+                                    <div class="mb-3 row">
+                                        <label for="usernameInput" class="col-sm-2 col-form-label">Username</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" id="usernameInput" class="form-control" placeholder="Username" value="{{ user.username }}" v-model="user.username">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 row">
+                                        <label for="first_nameInput" class="col-sm-2 col-form-label">First Name</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" id="first_nameInput" class="form-control" placeholder="First Name" value="{{ user.first_name }}" v-model="user.first_name">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 row">
+                                        <label for="last_nameInput" class="col-sm-2 col-form-label">Last Name</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" id="last_nameInput" class="form-control" placeholder="Last Name" value="{{ user.last_name }}" v-model="user.last_name">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 row">
+                                        <label for="roleInput" class="col-sm-2 col-form-label">Role</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" id="rolerInput" class="form-control" placeholder="Role" value="{{ user.role }}" v-model="user.role">
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                </fieldset>
+                            </form>
+                        </div>
+                        </div>
+                    </div>
+                </div>
                 <button type="button" class="btn btn-danger">Delete</button>
             </td>
         </tr>
@@ -32,9 +74,57 @@ import axios from 'axios';
 export default {
     data () {
         return {
-            alertLevel: '',
+            alertBox: {
+                type: '',
+                subject: '',
+                message: '',
+                visible: false
+            },
             userAuthenticated: false,
             userLoggedIn: true
+        }
+    },
+    methods: {
+        modifyUser(user) {
+            var requestBody = {'username':user.username, 'first_name': user.first_name, 'last_name': user.last_name, 'role': user.role}
+            console.log(requestBody)
+            axios({method: 'put', url:'/users/'+user.id+'/', headers: { 'Authorization': 'Bearer ' + localStorage.access_token}, data: requestBody}).then(
+            (response) => {
+                console.log('User Updated. Backend Response: ' + response.data.message)
+
+                this.alertBox.visible = true
+                this.alertBox.type = 'alert alert-success alert-dismissible fade show'
+                this.alertBox.subject = 'User Updated'
+                this.alertBox.message = response.data.message
+                this.getAllUsers()
+                this.$router.push('/users')
+            }
+            ).catch(error => {
+                console.error("User Update failed...")
+                console.log(error)
+                if (error.response.data.error === 'token_expired') {
+                    axios({method: 'get', url:'/refresh/', headers: { 'Authorization': 'Bearer ' + localStorage.refresh_token}}).then(
+                        (response) => {
+                            console.log('User access refreshed. Backend Response: ')
+                            localStorage.setItem('access_token', response.data.access_token)
+                            this.userAuthenticated = true
+                        }
+                    )
+                }
+            })
+            
+        },
+        getAllUsers() {
+            axios({method: 'get', url:'/users/', headers: { 'Authorization': 'Bearer ' + localStorage.access_token}}).then(
+            (response) => {
+                console.log("Receiving Users")
+                this.$store.state.users = response.data.users
+                this.userAuthenticated = true
+            }
+            ).catch(error => {
+                console.log('failed to get users. ' + error)
+                
+            })
         }
     },
     mounted() {
@@ -57,17 +147,8 @@ export default {
                 this.userAuthenticated = false
             })
         console.log('userLoggedIn: ' + this.userAuthenticated)
-
-        axios({method: 'get', url:'/users/', headers: { 'Authorization': 'Bearer ' + localStorage.access_token}}).then(
-            (response) => {
-                console.log("Receiving Users")
-                this.$store.state.users = response.data.users
-                this.userAuthenticated = true
-            }
-            ).catch(error => {
-                console.log('failed to get users. ' + error)
-                
-            })
+        this.getAllUsers()
+        
        
         }  
     }

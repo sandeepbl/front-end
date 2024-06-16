@@ -61,7 +61,7 @@
         <tr v-for="task in $store.state.tasks" :key="task.id">
             <td>{{ task.title }}</td>
             <td>{{ task.description }}</td>
-            <td>{{ task.project_name }}</td>
+            <td>{{ task.project_title }}</td>
             <td>{{ task.assigned_user }}</td>
             <td>
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" :data-bs-target="'#staticBackdrop'+task.id">Edit</button>
@@ -143,6 +143,8 @@ export default {
                 this.alertBox.type = 'alert alert-success alert-dismissible fade show'
                 this.alertBox.subject = 'Task Created'
                 this.alertBox.message = response.data.message
+                this.getAllTasks()
+                this.$router.push('/tasks')
                 }
                 ).catch(error => {
                     console.error("Task Create failed...")
@@ -178,6 +180,8 @@ export default {
                 this.alertBox.type = 'alert alert-success alert-dismissible fade show'
                 this.alertBox.subject = 'Task Updated'
                 this.alertBox.message = response.data.message
+                this.getAllTasks()
+                this.$router.push('/tasks')
             }
             ).catch(error => {
                 console.error("Task Update failed...")
@@ -194,6 +198,7 @@ export default {
             })
             
         },
+
         deleteTask(task) {
             if (confirm('Are you sure you want to delete the Task: ' + task.title)) {
                 axios({method: 'delete', url:'/tasks/'+task.id+'/', headers: { 'Authorization': 'Bearer ' + localStorage.access_token}}).then(
@@ -203,6 +208,8 @@ export default {
                         this.alertBox.type = 'alert alert-success alert-dismissible fade show'
                         this.alertBox.subject = 'Task Deleted'
                         this.alertBox.message = response.data.message
+                        this.getAllTasks()
+                        this.$router.push('/tasks')
                     }
                 ).catch(error => {
                 console.error("Task Delete failed...")
@@ -227,6 +234,20 @@ export default {
             } else {
                 console.log('Delete cancelled...')
             }
+        },
+        getAllTasks() {
+            axios({method: 'get', url:'/tasks/', headers: { 'Authorization': 'Bearer ' + localStorage.access_token}}).then(
+            (response) => {
+                console.log("Receiving Tasks")
+                // console.log(response.data.task_list)
+
+                this.$store.state.tasks = response.data.task_list
+                this.userAuthenticated = true
+            }
+            ).catch(error => {
+                console.log('failed to get tasks. ' + error)
+                
+            })
         }
     },
     mounted() {
@@ -260,18 +281,8 @@ export default {
             })
         console.log('userLoggedIn: ' + this.userAuthenticated)
 
-        axios({method: 'get', url:'/tasks/', headers: { 'Authorization': 'Bearer ' + localStorage.access_token}}).then(
-            (response) => {
-                console.log("Receiving Tasks")
-
-
-                this.$store.state.tasks = response.data.task_list
-                this.userAuthenticated = true
-            }
-            ).catch(error => {
-                console.log('failed to get tasks. ' + error)
-                
-            })
+        this.getAllTasks()
+        
     }
 }
 

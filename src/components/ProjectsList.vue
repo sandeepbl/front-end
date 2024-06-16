@@ -119,7 +119,6 @@ export default {
     },
     methods: {
         createProject(project) {
-
             var requestBody = {'title':project.title, 'description': project.description, 'manager_user_id': project.manager_user_id}
             console.log(requestBody)
             axios({method: 'post', url:'/projects/create/', headers: { 'Authorization': 'Bearer ' + localStorage.access_token}, data: requestBody}).then(
@@ -130,6 +129,8 @@ export default {
                 this.alertBox.type = 'alert alert-success alert-dismissible fade show'
                 this.alertBox.subject = 'Project Created'
                 this.alertBox.message = response.data.message
+                this.getAllProjects()
+                this.$router.push('/projects')
             }
             ).catch(error => {
                 console.error("Project Create failed...")
@@ -149,6 +150,7 @@ export default {
                     this.alertBox.type = 'alert alert-warning alert-dismissible fade show'
                     this.alertBox.subject = 'User is not a Registered User'
                     this.alertBox.message = 'Not Authorized to Delete Projects! Please contact the Team'
+                    this.$router.push('/projects')
                 }
                 }
             )
@@ -164,6 +166,8 @@ export default {
                 this.alertBox.type = 'alert alert-success alert-dismissible fade show'
                 this.alertBox.subject = 'Project Updated'
                 this.alertBox.message = response.data.message
+                this.getAllProjects()
+                this.$router.push('/projects')
             }
             ).catch(error => {
                 console.error("Project Update failed...")
@@ -197,10 +201,13 @@ export default {
                         this.alertBox.type = 'alert alert-success alert-dismissible fade show'
                         this.alertBox.subject = 'Project Deleted'
                         this.alertBox.message = response.data.message
+                        this.getAllProjects()
+                        this.$router.push('/projects')
                     }
                 ).catch(error => {
                 console.error("Project Delete failed...")
                 if (error.response.data.error === 'token_expired') {
+                    console.error("token_expired...")
                     axios({method: 'get', url:'/refresh/', headers: { 'Authorization': 'Bearer ' + localStorage.refresh_token}}).then(
                         (response) => {
                             console.log('User access refreshed. Backend Response: ')
@@ -221,6 +228,19 @@ export default {
             } else {
                 console.log('Delete cancelled...')
             }
+        },
+        getAllProjects() {
+            axios({method: 'get', url:'/projects/', headers: { 'Authorization': 'Bearer ' + localStorage.access_token}}).then(
+            (response) => {
+                console.log("Receiving Projects")
+                this.$store.state.projects = response.data.projects
+                this.$store
+                this.userAuthenticated = true
+            }
+            ).catch(error => {
+                console.log('failed to get Projects. ' + error)
+                
+            })
         }
     },
     mounted() {
@@ -252,18 +272,8 @@ export default {
                 this.userAuthenticated = false
             })
         console.log('userLoggedIn: ' + this.userAuthenticated)
-
-        axios({method: 'get', url:'/projects/', headers: { 'Authorization': 'Bearer ' + localStorage.access_token}}).then(
-            (response) => {
-                console.log("Receiving Projects")
-                this.$store.state.projects = response.data.projects
-                this.$store
-                this.userAuthenticated = true
-            }
-            ).catch(error => {
-                console.log('failed to get Projects. ' + error)
-                
-            })
+        this.getAllProjects()
+        
     }
 }
 
