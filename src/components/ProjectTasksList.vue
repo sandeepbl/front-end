@@ -1,37 +1,44 @@
 <template>
     <div class="container" v-if="userAuthenticated">
-        <h1>Projects</h1>
+        <h1>Tasks</h1>
+        <button style="float:left" type="button" class="btn btn-secondary" @click="historyBack">Back</button>
         <div v-if="alertBox.visible" :class="alertBox.type" role="alert">
             <strong>{{ alertBox.subject }}</strong> {{ alertBox.message }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-        <button style="float:right" type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createProject">Create New</button>
-        <div class="modal fade" id="createProject" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="createProjectLabel" aria-hidden="true">
+        <button style="float:right" type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createTask">Create New</button>
+        <div class="modal fade" id="createTask" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="createTaskLabel" aria-hidden="true">
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="createProjectLabel">Create New Project</h1>
+                    <h1 class="modal-title fs-5" id="createTaskLabel">Create New Task</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form @submit.prevent="createProject(newProject)">
+                    <form @submit.prevent="createTask(newTask)">
                         <fieldset>
                             <div class="mb-3 row">
-                                <label for="titleInput" class="col-sm-2 col-form-label">Project Title</label>
+                                <label for="titleInput" class="col-sm-2 col-form-label">Task Title</label>
                                 <div class="col-sm-10">
-                                    <input type="text" id="titleInput" class="form-control" placeholder="Project Title" value="" v-model="newProject.title">
+                                    <input type="text" id="titleInput" class="form-control" placeholder="Task Title" value="" v-model="newTask.title">
                                 </div>
                             </div>
                             <div class="mb-3 row">
-                                <label for="descriptionInput" class="col-sm-2 col-form-label">Project Description</label>
+                                <label for="descriptionInput" class="col-sm-2 col-form-label">Task Description</label>
                                 <div class="col-sm-10">
-                                    <textarea rows="6" type="text" id="descriptionInput" class="form-control" placeholder="Project Description" value="" v-model="newProject.description"></textarea>
+                                    <textarea rows="6" type="text" id="descriptionInput" class="form-control" placeholder="Task Description" value="" v-model="newTask.description"></textarea>
                                 </div>
                             </div>
                             <div class="mb-3 row">
-                                <label for="managerInput" class="col-sm-2 col-form-label">Project Manager</label>
+                                <label for="managerInput" class="col-sm-2 col-form-label">Project ID</label>
                                 <div class="col-sm-10">
-                                    <input type="text" id="managerInput" class="form-control" placeholder="Project Manager" value="" v-model="newProject.manager_user_id">
+                                    <input type="text" id="managerInput" class="form-control" placeholder="Project ID" value="{{ selected_project_id }}" v-model="selected_project_id">
+                                </div>
+                            </div>
+                            <div class="mb-3 row">
+                                <label for="managerInput" class="col-sm-2 col-form-label">Assigned User ID</label>
+                                <div class="col-sm-10">
+                                    <input type="text" id="managerInput" class="form-control" placeholder="Assigned User ID" value="" v-model="newTask.assigned_user_id">
                                 </div>
                             </div>
                             <button type="submit" class="btn btn-primary">Submit</button>
@@ -41,49 +48,57 @@
                 </div>
             </div>
         </div>
-
         <table class="table table-hover table-striped">
         <thead>
         <tr>
             <th scope="col">Title</th>
             <th scope="col">Description</th>
-            <th scope="col">Project Manager</th>
+            <th scope="col">Project Name</th>
+            <th scope="col">Assignee</th>
+            <th scope="col">Actions</th>
         </tr>
         </thead>
         <tbody>
-        <tr v-for="project in $store.state.projects" :key="project.id">
-            <td><router-link :to="'/tasks/'+project.id">{{ project.title }}</router-link></td>
-            <td>{{ project.description }}</td>
-            <td>{{ project.manager }}</td>
+        <tr v-for="task in selected_tasks" :key="task.id">
+            <td>{{ task.title }}</td>
+            <td>{{ task.description }}</td>
+            <td>{{ task.project_title }}</td>
+            <td>{{ task.assigned_user }}</td>
             <td>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" :data-bs-target="'#staticBackdrop'+project.id">Edit</button>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" :data-bs-target="'#staticBackdrop'+task.id">Edit</button>
                 
-                <div class="modal fade" :id="'staticBackdrop'+project.id" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal fade" :id="'staticBackdrop'+task.id" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                     <div class="modal-dialog modal-xl">
                         <div class="modal-content">
                         <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="staticBackdropLabel">Modify Project</h1>
+                            <h1 class="modal-title fs-5" id="staticBackdropLabel">Modify Task</h1>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <form @submit.prevent="modifyProject(project)">
+                            <form @submit.prevent="modifyTask(task)">
                                 <fieldset>
                                     <div class="mb-3 row">
-                                        <label for="titleInput" class="col-sm-2 col-form-label">Project Title</label>
+                                        <label for="titleInput" class="col-sm-2 col-form-label">Task Title</label>
                                         <div class="col-sm-10">
-                                            <input type="text" id="titleInput" class="form-control" placeholder="titleInput" value="{{ project.title }}" v-model="project.title">
+                                            <input type="text" id="titleInput" class="form-control" placeholder="Task Title" value="{{ task.title }}" v-model="task.title">
                                         </div>
                                     </div>
                                     <div class="mb-3 row">
-                                        <label for="descriptionInput" class="col-sm-2 col-form-label">Project Description</label>
+                                        <label for="descriptionInput" class="col-sm-2 col-form-label">Task Description</label>
                                         <div class="col-sm-10">
-                                            <textarea rows="6" type="text" id="descriptionInput" class="form-control" placeholder="descriptionInput" value="{{ project.description }}" v-model="project.description"></textarea>
+                                            <textarea rows="6" type="text" id="descriptionInput" class="form-control" placeholder="Task Description" value="{{ task.description }}" v-model="task.description"></textarea>
                                         </div>
                                     </div>
                                     <div class="mb-3 row">
-                                        <label for="managerInput" class="col-sm-2 col-form-label">Project Manager</label>
+                                        <label for="managerInput" class="col-sm-2 col-form-label">Project ID</label>
                                         <div class="col-sm-10">
-                                            <input type="text" id="managerInput" class="form-control" placeholder="managerInput" value="{{ project.manager }}" v-model="project.manager">
+                                            <input type="text" id="managerInput" class="form-control" placeholder="Project ID" value="{{ task.project_id }}" v-model="task.project_id">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 row">
+                                        <label for="managerInput" class="col-sm-2 col-form-label">Assigned User ID</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" id="managerInput" class="form-control" placeholder="Assigned User ID" value="{{ task.assigned_user_id }}" v-model="task.assigned_user_id">
                                         </div>
                                     </div>
                                     <button type="submit" class="btn btn-primary">Submit</button>
@@ -93,9 +108,8 @@
                         </div>
                     </div>
                 </div>
-                <button type="button" class="btn btn-danger" @click="deleteProject(project)">Delete</button>
+                <button type="button" class="btn btn-danger" @click="deleteTask(task)">Delete</button>
             </td>
-
         </tr>
         </tbody>
         </table>
@@ -107,7 +121,9 @@ import axios from 'axios';
 export default {
     data () {
         return {
-            newProject:{},
+            newTask:{},
+            selected_tasks: {},
+            selected_project_id: this.$route.params.pid,
             alertBox: {
                 type: '',
                 subject: '',
@@ -118,23 +134,28 @@ export default {
         }
     },
     methods: {
-        createProject(project) {
-            var requestBody = {'title':project.title, 'description': project.description, 'manager_user_id': project.manager_user_id}
+        historyBack() {
+            this.$router.go(-1)
+        },
+        createTask(task) {
+            console.log(task)
+            var requestBody = {'title':task.title, 'description': task.description, 'project_id': task.project_id, 'assigned_user_id': task.assigned_user_id}
             console.log(requestBody)
-            axios({method: 'post', url:'/projects/create/', headers: { 'Authorization': 'Bearer ' + localStorage.access_token}, data: requestBody}).then(
+            axios({method: 'post', url:'/tasks/create/', headers: { 'Authorization': 'Bearer ' + localStorage.access_token}, data: requestBody}).then(
             (response) => {
-                console.log('Project Created. Backend Response: ' + response)
+                console.log('Task Created. Backend Response: ' + response)
 
                 this.alertBox.visible = true
                 this.alertBox.type = 'alert alert-success alert-dismissible fade show'
-                this.alertBox.subject = 'Project Created'
+                this.alertBox.subject = 'Task Created'
                 this.alertBox.message = response.data.message
-                this.getAllProjects()
-                this.$router.push('/projects')
-            }
-            ).catch(error => {
-                console.error("Project Create failed...")
-                console.log(error)
+                this.getAllTasksforProject(this.selected_project_id)
+                this.$router.push('/tasks')
+                }
+                ).catch(error => {
+                    console.error("Task Create failed...")
+                    console.log(error)
+
                 if (error.response.data.error === 'token_expired') {
                     axios({method: 'get', url:'/refresh/', headers: { 'Authorization': 'Bearer ' + localStorage.refresh_token}}).then(
                         (response) => {
@@ -145,32 +166,32 @@ export default {
                     )
                 }
                 if (error.response.data.error === 'not_registered_user') {
-                    console.log('User is not a Registered User. Not Authorized to Create Projects! Please contact the Team.')
+                    console.log('User is not a Registered User. Not Authorized to Create Tasks! Please contact the Team.')
                     this.alertBox.visible = true
                     this.alertBox.type = 'alert alert-warning alert-dismissible fade show'
                     this.alertBox.subject = 'User is not a Registered User'
-                    this.alertBox.message = 'Not Authorized to Delete Projects! Please contact the Team'
-                    this.$router.push('/projects')
+                    this.alertBox.message = 'Not Authorized to Delete Tasks! Please contact the Team'
                 }
                 }
             )
         },
 
-        modifyProject(project) {
-            var requestBody = {'title':project.title, 'description': project.description, 'manager_user_id': project.manager_user_id}
-            axios({method: 'put', url:'/projects/'+project.id+'/', headers: { 'Authorization': 'Bearer ' + localStorage.access_token}, data: requestBody}).then(
+        modifyTask(task) {
+            console.log('Got pid: '+this.selected_project_id)
+            var requestBody = {'title':task.title, 'description': task.description, 'project_id': task.project_id, 'assigned_user_id': task.assigned_user_id}
+            axios({method: 'put', url:'/tasks/'+task.id+'/', headers: { 'Authorization': 'Bearer ' + localStorage.access_token}, data: requestBody}).then(
             (response) => {
-                console.log('Project Updated. Backend Response: ' + response.data.message)
+                console.log('Task Updated. Backend Response: ' + response.data.message)
 
                 this.alertBox.visible = true
                 this.alertBox.type = 'alert alert-success alert-dismissible fade show'
-                this.alertBox.subject = 'Project Updated'
+                this.alertBox.subject = 'Task Updated'
                 this.alertBox.message = response.data.message
-                this.getAllProjects()
-                this.$router.push('/projects')
+                this.getAllTasksforProject(this.selected_project_id)
+                this.$router.push('/tasks')
             }
             ).catch(error => {
-                console.error("Project Update failed...")
+                console.error("Task Update failed...")
                 console.log(error)
                 if (error.response.data.error === 'token_expired') {
                     axios({method: 'get', url:'/refresh/', headers: { 'Authorization': 'Bearer ' + localStorage.refresh_token}}).then(
@@ -181,33 +202,25 @@ export default {
                         }
                     )
                 }
-                if (error.response.data.error === 'not_manager_user') {
-
-                    console.log('User is not a Manager. Not Authorized to Delete Projects! Please contact the Project Manager.')
-                    this.alertBox.visible = true
-                    this.alertBox.type = 'alert alert-warning alert-dismissible fade show'
-                    this.alertBox.subject = 'User is not a Manager'
-                    this.alertBox.message = 'Not Authorized to Delete Projects! Please contact the Project Manager'
-                }
             })
             
         },
-        deleteProject(project) {
-            if (confirm('Are you sure you want to delete the Project: ' + project.title)) {
-                axios({method: 'delete', url:'/projects/'+project.id+'/', headers: { 'Authorization': 'Bearer ' + localStorage.access_token}}).then(
+
+        deleteTask(task) {
+            if (confirm('Are you sure you want to delete the Task: ' + task.title)) {
+                axios({method: 'delete', url:'/tasks/'+task.id+'/', headers: { 'Authorization': 'Bearer ' + localStorage.access_token}}).then(
                     (response) => {
-                        console.log('Project Deleted. Backend Response: '+response.data.message)
+                        console.log('Task Deleted. Backend Response: '+response.data.message)
                         this.alertBox.visible = true
                         this.alertBox.type = 'alert alert-success alert-dismissible fade show'
-                        this.alertBox.subject = 'Project Deleted'
+                        this.alertBox.subject = 'Task Deleted'
                         this.alertBox.message = response.data.message
-                        this.getAllProjects()
-                        this.$router.push('/projects')
+                        this.getAllTasksforProject(this.selected_project_id)
+                        this.$router.push('/tasks')
                     }
                 ).catch(error => {
-                console.error("Project Delete failed...")
+                console.error("Task Delete failed...")
                 if (error.response.data.error === 'token_expired') {
-                    console.error("token_expired...")
                     axios({method: 'get', url:'/refresh/', headers: { 'Authorization': 'Bearer ' + localStorage.refresh_token}}).then(
                         (response) => {
                             console.log('User access refreshed. Backend Response: ')
@@ -217,11 +230,11 @@ export default {
                     )
                 }
                 if (error.response.data.error === 'not_manager_user') {
-                    console.log('User is not a Manager. Not Authorized to Delete Projects! Please contact the Project Manager.')
+                    console.log('User is not a Manager. Not Authorized to Delete Tasks! Please contact the Task Manager.')
                     this.alertBox.visible = true
                     this.alertBox.type = 'alert alert-warning alert-dismissible fade show'
                     this.alertBox.subject = 'User is not a Manager'
-                    this.alertBox.message = 'Not Authorized to Delete Projects! Please contact the Project Manager'
+                    this.alertBox.message = 'Not Authorized to Delete Tasks! Please contact the Task Manager'
                 }
             })
 
@@ -229,16 +242,17 @@ export default {
                 console.log('Delete cancelled...')
             }
         },
-        getAllProjects() {
-            axios({method: 'get', url:'/projects/', headers: { 'Authorization': 'Bearer ' + localStorage.access_token}}).then(
+        getAllTasksforProject(selected_project_id) {
+            axios({method: 'get', url:'/tasks/project/'+ selected_project_id + '/', headers: { 'Authorization': 'Bearer ' + localStorage.access_token}}).then(
             (response) => {
-                console.log("Receiving Projects")
-                this.$store.state.projects = response.data.projects
-                this.$store
+                console.log("Receiving Tasks for Project:" + selected_project_id)
+                console.log(response.data.project_tasks)
+
+                this.selected_tasks = response.data.project_tasks
                 this.userAuthenticated = true
             }
             ).catch(error => {
-                console.log('failed to get Projects. ' + error)
+                console.log('failed to get tasks. ' + error)
                 
             })
         }
@@ -262,18 +276,19 @@ export default {
                 console.error("User login check failed...")
                 if (error.response.data.error === 'token_expired') {
                     axios({method: 'get', url:'/refresh/', headers: { 'Authorization': 'Bearer ' + localStorage.refresh_token}}).then(
-                        (response) => {
-                            console.log('User access refreshed. Backend Response: ')
-                            localStorage.setItem('access_token', response.data.access_token)
-                            this.userAuthenticated = true
-                        }
-                    )
+            (response) => {
+                console.log('User access refreshed. Backend Response: ')
+                console.log(response.data.access_token)
+                localStorage.setItem('access_token', response.data.access_token)
+                this.userAuthenticated = true
+            }
+            )
                 }
                 this.userAuthenticated = false
                 this.$router.push('/login')
             })
 
-        this.getAllProjects()
+        this.getAllTasksforProject(this.selected_project_id)
         
     }
 }

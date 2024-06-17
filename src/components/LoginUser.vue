@@ -17,10 +17,6 @@
                             <label for="password" class="form-label">Password</label>
                             <input type="password" class="form-control" id="password" v-model="password">
                         </div>
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="exampleCheck1" v-model="rememberUser">
-                            <label class="form-check-label" for="exampleCheck1">Remember Me</label>
-                        </div>
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </form>
                 </div>
@@ -28,9 +24,8 @@
         </div>
     </div>
     <div class="container" v-else>
-        <h3>Logged in User Profile</h3>
+        <h3>User Profile</h3>
         <p>User Name: {{ $store.state.currentUser.username }}</p>
-        <p>Name: {{ $store.state.currentUser.first_name }} {{ $store.state.currentUser.last_name }}</p>
         <p>Role: {{ $store.state.currentUser.role }}</p>
     </div>
 </template>

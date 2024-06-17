@@ -20,6 +20,8 @@ export default {
     if (localStorage.username) {
       this.userAuthenticated = true
       console.log("User is logged in")
+    } else {
+      this.$router.push('/login')
     }
   }
 }

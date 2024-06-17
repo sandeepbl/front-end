@@ -59,7 +59,7 @@ export default {
       this.$store.state.currentUser.lastName = localStorage.last_name
       this.$store.state.currentUser.username = localStorage.username
       this.$store.state.currentUser.role = localStorage.role
-      this.userLoginText = 'Logged in as: ' +  localStorage.first_name + ' ' + localStorage.last_name + ' (' + localStorage.role + ') '
+      this.userLoginText = 'User Profile: ' +  localStorage.first_name + ' ' + localStorage.last_name + ' (' + localStorage.role + ') '
     }
   }
 }

@@ -5,6 +5,7 @@ import RegisterView from '../views/RegisterView.vue'
 import TasksListView from '../views/TasksListView.vue'
 import ProjectsListView from '../views/ProjectsListView.vue'
 import UsersListView from '../views/UsersListView.vue'
+import ProjectTasksList from '@/components/ProjectTasksList.vue'
 
 const routes = [
   {
@@ -36,6 +37,11 @@ const routes = [
     path: '/users',
     name: 'users',
     component: UsersListView
+  },
+  {
+    path: '/tasks/:pid',
+    name: 'projecttasks',
+    component: ProjectTasksList
   }
 ]
 
