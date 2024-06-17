@@ -12,7 +12,8 @@
           <a class="nav-link" href="/projects">Projects</a>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              {{ $store.state.currentUser.username }}
+              <span v-if="$store.state.currentUser.username">{{ $store.state.currentUser.username }}</span>
+              <span v-else>Users</span>
             </a>
             <ul class="dropdown-menu">
               <li><a class="dropdown-item" href="/users">Manage Users</a></li>
@@ -49,6 +50,7 @@ export default {
       localStorage.removeItem('role')
       localStorage.removeItem('username')
       this.$router.push('/login')
+      this.$store.state.currentUser.username = null
     }
   },
   mounted() {

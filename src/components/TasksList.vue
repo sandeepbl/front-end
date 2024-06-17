@@ -274,12 +274,13 @@ export default {
                 console.log(response.data.access_token)
                 localStorage.setItem('access_token', response.data.access_token)
                 this.userAuthenticated = true
+                
             }
             )
                 }
                 this.userAuthenticated = false
+                this.$router.push('/login')
             })
-        console.log('userLoggedIn: ' + this.userAuthenticated)
 
         this.getAllTasks()
         

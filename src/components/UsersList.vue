@@ -145,10 +145,10 @@ export default {
             ).catch(error => {
                 console.error("User login check failed...")
                 this.userAuthenticated = false
+                this.$router.push('/login')
             })
-        console.log('userLoggedIn: ' + this.userAuthenticated)
+
         this.getAllUsers()
-        
        
         }  
     }

@@ -270,8 +270,9 @@ export default {
                     )
                 }
                 this.userAuthenticated = false
+                this.$router.push('/login')
             })
-        console.log('userLoggedIn: ' + this.userAuthenticated)
+
         this.getAllProjects()
         
     }
