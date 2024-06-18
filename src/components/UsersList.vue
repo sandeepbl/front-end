@@ -97,6 +97,8 @@ export default {
                 this.alertBox.subject = 'User Updated'
                 this.alertBox.message = response.data.message
                 this.getAllUsers()
+                this.$emit('hide', true)
+                this.$('staticBackdrop'+user.id).modal('hide')
                 this.$router.push('/users')
             }
             ).catch(error => {
