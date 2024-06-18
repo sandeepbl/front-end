@@ -39,6 +39,26 @@ export default {
             role: 'User'
         }
     },
+    mounted() {
+        axios.headers =  {'Authorization': 'Bearer ' + localStorage.access_token}
+        axios.get('/healthcheck/').then(
+                (response) => {
+                    console.log('Backend: '+response.data.message)
+                }
+            ).catch(error => {
+                console.error("Healthcheck Failed... Backend server not responding.")
+            })
+        console.log('Checking user access with access token.')
+        axios({method: 'get', url:'/access/', headers: { 'Authorization': 'Bearer ' + localStorage.access_token}}).then(
+            (response) => {
+                console.log('User has access. Backend Response: '+response.data.message)
+                this.userAuthenticated = true
+            }
+            ).catch(error => {
+                console.error("User login check failed...")
+                this.userAuthenticated = false
+            })
+    },
     methods: {
         registerUser() {
             const authHeader = { headers: { 'Authorization': 'Bearer ' + localStorage.access_token}}
