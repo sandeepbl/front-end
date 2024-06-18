@@ -1,6 +1,6 @@
 <template>
     <div class="container" v-if="userAuthenticated">
-        <h1>Tasks for: {{ selected_project_id }}</h1>
+        <h2>Tasks for Project: {{ selected_project_id }}</h2>
         <button style="float:left" type="button" class="btn btn-secondary" @click="historyBack">Back</button>
         <div v-if="alertBox.visible" :class="alertBox.type" role="alert">
             <strong>{{ alertBox.subject }}</strong> {{ alertBox.message }}
