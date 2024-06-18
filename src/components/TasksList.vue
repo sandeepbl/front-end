@@ -19,7 +19,7 @@
                             <div class="mb-3 row">
                                 <label for="titleInput" class="col-sm-2 col-form-label">Task Title</label>
                                 <div class="col-sm-10">
-                                    <input type="text" id="titleInput" class="form-control" placeholder="Task Title" value="" v-model="newTask.title">
+                                    <input required type="text" id="titleInput" class="form-control" placeholder="Task Title" value="" v-model="newTask.title">
                                 </div>
                             </div>
                             <div class="mb-3 row">
@@ -54,7 +54,7 @@
             <th scope="col">Description</th>
             <th scope="col">Project Name</th>
             <th scope="col">Assignee</th>
-            <th scope="col">Actions</th>
+            <th scope="col" v-if="$store.state.currentUser.role == 'Admin'">Actions</th>
         </tr>
         </thead>
         <tbody>
@@ -63,7 +63,7 @@
             <td>{{ task.description }}</td>
             <td>{{ task.project_title }}</td>
             <td>{{ task.assigned_user }}</td>
-            <td>
+            <td  v-if="$store.state.currentUser.role == 'Admin'">
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" :data-bs-target="'#staticBackdrop'+task.id">Edit</button>
                 
                 <div class="modal fade" :id="'staticBackdrop'+task.id" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
@@ -79,7 +79,7 @@
                                     <div class="mb-3 row">
                                         <label for="titleInput" class="col-sm-2 col-form-label">Task Title</label>
                                         <div class="col-sm-10">
-                                            <input type="text" id="titleInput" class="form-control" placeholder="Task Title" value="{{ task.title }}" v-model="task.title">
+                                            <input required type="text" id="titleInput" class="form-control" placeholder="Task Title" value="{{ task.title }}" v-model="task.title">
                                         </div>
                                     </div>
                                     <div class="mb-3 row">
@@ -198,7 +198,6 @@ export default {
             })
             
         },
-
         deleteTask(task) {
             if (confirm('Are you sure you want to delete the Task: ' + task.title)) {
                 axios({method: 'delete', url:'/tasks/'+task.id+'/', headers: { 'Authorization': 'Bearer ' + localStorage.access_token}}).then(

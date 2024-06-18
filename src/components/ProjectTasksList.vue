@@ -20,7 +20,7 @@
                             <div class="mb-3 row">
                                 <label for="titleInput" class="col-sm-2 col-form-label">Task Title</label>
                                 <div class="col-sm-10">
-                                    <input type="text" id="titleInput" class="form-control" placeholder="Task Title" value="" v-model="newTask.title">
+                                    <input required type="text" id="titleInput" class="form-control" placeholder="Task Title" value="" v-model="newTask.title">
                                 </div>
                             </div>
                             <div class="mb-3 row">
@@ -80,7 +80,7 @@
                                     <div class="mb-3 row">
                                         <label for="titleInput" class="col-sm-2 col-form-label">Task Title</label>
                                         <div class="col-sm-10">
-                                            <input type="text" id="titleInput" class="form-control" placeholder="Task Title" value="{{ task.title }}" v-model="task.title">
+                                            <input required type="text" id="titleInput" class="form-control" placeholder="Task Title" value="{{ task.title }}" v-model="task.title">
                                         </div>
                                     </div>
                                     <div class="mb-3 row">

@@ -33,25 +33,25 @@
                                     <div class="mb-3 row">
                                         <label for="usernameInput" class="col-sm-2 col-form-label">Username</label>
                                         <div class="col-sm-10">
-                                            <input type="text" id="usernameInput" class="form-control" placeholder="Username" value="{{ user.username }}" v-model="user.username">
+                                            <input required type="text" id="usernameInput" class="form-control" placeholder="Username" value="{{ user.username }}" v-model="user.username">
                                         </div>
                                     </div>
                                     <div class="mb-3 row">
                                         <label for="first_nameInput" class="col-sm-2 col-form-label">First Name</label>
                                         <div class="col-sm-10">
-                                            <input type="text" id="first_nameInput" class="form-control" placeholder="First Name" value="{{ user.first_name }}" v-model="user.first_name">
+                                            <input required type="text" id="first_nameInput" class="form-control" placeholder="First Name" value="{{ user.first_name }}" v-model="user.first_name">
                                         </div>
                                     </div>
                                     <div class="mb-3 row">
                                         <label for="last_nameInput" class="col-sm-2 col-form-label">Last Name</label>
                                         <div class="col-sm-10">
-                                            <input type="text" id="last_nameInput" class="form-control" placeholder="Last Name" value="{{ user.last_name }}" v-model="user.last_name">
+                                            <input required type="text" id="last_nameInput" class="form-control" placeholder="Last Name" value="{{ user.last_name }}" v-model="user.last_name">
                                         </div>
                                     </div>
                                     <div class="mb-3 row">
                                         <label for="roleInput" class="col-sm-2 col-form-label">Role</label>
                                         <div class="col-sm-10">
-                                            <input type="text" id="rolerInput" class="form-control" placeholder="Role" value="{{ user.role }}" v-model="user.role">
+                                            <input required type="text" id="rolerInput" class="form-control" placeholder="Role" value="{{ user.role }}" v-model="user.role">
                                         </div>
                                     </div>
                                     <button type="submit" class="btn btn-primary">Submit</button>
@@ -61,7 +61,7 @@
                         </div>
                     </div>
                 </div>
-                <button type="button" class="btn btn-danger">Delete</button>
+                <button type="button" class="btn btn-danger" @click="deleteUser(user)">Delete</button>
             </td>
         </tr>
         </tbody>
@@ -113,6 +113,42 @@ export default {
                 }
             })
             
+        },
+        deleteUser(user) {
+            if (confirm('Are you sure you want to delete the User: ' + user.first_name + ' ' + user.last_name)) {
+                axios({method: 'delete', url:'/users/'+user.id+'/', headers: { 'Authorization': 'Bearer ' + localStorage.access_token}}).then(
+                    (response) => {
+                        console.log('User Deleted. Backend Response: '+response.data.message)
+                        this.alertBox.visible = true
+                        this.alertBox.type = 'alert alert-success alert-dismissible fade show'
+                        this.alertBox.subject = 'User Deleted'
+                        this.alertBox.message = response.data.message
+                        this.getAllUsers()
+                        this.$router.push('/users')
+                    }
+                ).catch(error => {
+                console.error("User Delete failed...")
+                if (error.response.data.error === 'token_expired') {
+                    axios({method: 'get', url:'/refresh/', headers: { 'Authorization': 'Bearer ' + localStorage.refresh_token}}).then(
+                        (response) => {
+                            console.log('User access refreshed. Backend Response: ')
+                            localStorage.setItem('access_token', response.data.access_token)
+                            this.userAuthenticated = true
+                        }
+                    )
+                }
+                if (error.response.data.error === 'not_manager_user') {
+                    console.log('User is not a Manager. Not Authorized to Delete Users! Please contact the User Manager.')
+                    this.alertBox.visible = true
+                    this.alertBox.type = 'alert alert-warning alert-dismissible fade show'
+                    this.alertBox.subject = 'User is not a Manager'
+                    this.alertBox.message = 'Not Authorized to Delete Users! Please contact the User Manager'
+                }
+            })
+
+            } else {
+                console.log('Delete cancelled...')
+            }
         },
         getAllUsers() {
             axios({method: 'get', url:'/users/', headers: { 'Authorization': 'Bearer ' + localStorage.access_token}}).then(

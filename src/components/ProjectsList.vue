@@ -19,7 +19,7 @@
                             <div class="mb-3 row">
                                 <label for="titleInput" class="col-sm-2 col-form-label">Project Title</label>
                                 <div class="col-sm-10">
-                                    <input type="text" id="titleInput" class="form-control" placeholder="Project Title" value="" v-model="newProject.title">
+                                    <input required type="text" id="titleInput" class="form-control" placeholder="Project Title" value="" v-model="newProject.title">
                                 </div>
                             </div>
                             <div class="mb-3 row">
@@ -71,7 +71,7 @@
                                     <div class="mb-3 row">
                                         <label for="titleInput" class="col-sm-2 col-form-label">Project Title</label>
                                         <div class="col-sm-10">
-                                            <input type="text" id="titleInput" class="form-control" placeholder="titleInput" value="{{ project.title }}" v-model="project.title">
+                                            <input required type="text" id="titleInput" class="form-control" placeholder="titleInput" value="{{ project.title }}" v-model="project.title">
                                         </div>
                                     </div>
                                     <div class="mb-3 row">
@@ -239,7 +239,6 @@ export default {
             }
             ).catch(error => {
                 console.log('failed to get Projects. ' + error)
-                
             })
         }
     },
